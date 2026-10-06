@@ -1,0 +1,18 @@
+# Archivos generados por STM32CubeIDE
+Debug/
+Release/
+
+# Archivos compilados
+*.o
+*.d
+*.su
+*.cyclo
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
