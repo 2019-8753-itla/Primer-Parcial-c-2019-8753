@@ -52,6 +52,19 @@ UART_HandleTypeDef huart2;
 volatile uint32_t g_ms = 0;
 volatile uint8_t buttonEdgePending = 0;
 
+uint8_t buttonRawState = 0;
+uint8_t buttonStableState = 0;
+
+uint8_t debounceActive = 0;
+uint32_t debounceStart = 0;
+
+uint32_t pressStart = 0;
+uint8_t buttonPressed = 0;
+uint8_t longPressReported = 0;
+
+uint32_t shortPressCount = 0;
+uint32_t longPressCount = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -106,6 +119,11 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 
+  buttonRawState =
+      HAL_GPIO_ReadPin(USER_BTN_GPIO_Port, USER_BTN_Pin);
+
+  buttonStableState = buttonRawState;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -116,11 +134,81 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+	  uint32_t now = g_ms;
+
+	  /* Se detectó un flanco mediante EXTI */
 	  if (buttonEdgePending)
 	  {
 	      buttonEdgePending = 0;
 
-	      HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+	      buttonRawState =
+	          HAL_GPIO_ReadPin(USER_BTN_GPIO_Port, USER_BTN_Pin);
+
+	      debounceStart = now;
+	      debounceActive = 1;
+	  }
+
+	  /* Validación no bloqueante de 30 ms */
+	  if (debounceActive)
+	  {
+	      uint8_t currentState =
+	          HAL_GPIO_ReadPin(USER_BTN_GPIO_Port, USER_BTN_Pin);
+
+	      /* Si vuelve a cambiar, reiniciamos los 30 ms */
+	      if (currentState != buttonRawState)
+	      {
+	          buttonRawState = currentState;
+	          debounceStart = now;
+	      }
+
+	      /* Debe permanecer estable durante 30 ms */
+	      if ((uint32_t)(now - debounceStart) >= 30U)
+	      {
+	          debounceActive = 0;
+
+	          if (buttonStableState != buttonRawState)
+	          {
+	              buttonStableState = buttonRawState;
+
+	              /* B1 es activo en bajo */
+	              if (buttonStableState == GPIO_PIN_RESET)
+	              {
+	                  /* Pulsación validada */
+	                  buttonPressed = 1;
+	                  pressStart = now;
+	                  longPressReported = 0;
+	              }
+	              else
+	              {
+	                  /* Liberación validada */
+	                  if (buttonPressed)
+	                  {
+	                      if (!longPressReported)
+	                      {
+	                          uint32_t pressDuration =
+	                              (uint32_t)(now - pressStart);
+
+	                          if (pressDuration >= 30U &&
+	                              pressDuration < 1500U)
+	                          {
+	                              shortPressCount++;
+	                          }
+	                      }
+
+	                      buttonPressed = 0;
+	                  }
+	              }
+	          }
+	      }
+	  }
+	  /* Detección de pulsación larga */
+	  if (buttonPressed && !longPressReported)
+	  {
+	      if ((uint32_t)(now - pressStart) >= 1500U)
+	      {
+	          longPressReported = 1;
+	          longPressCount++;
+	      }
 	  }
   }
   /* USER CODE END 3 */

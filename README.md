@@ -1,7 +1,5 @@
 Primer Parcial de Microcontroladores
 
-
-
 * Nombre: Jose Amauris Palma Rosario
 * Matrícula: 2019-8753
 * Placa utilizada: STM32 NUCLEO-F302R8
@@ -199,4 +197,16 @@ Actualmente se configuro inicialmente:
 \- TIM6 para base de tiempo de 1 ms.
 
 \- TIM2 CH1 para PWM por hardware.
+
+\- Antirrebote de 30 ms probado.
+
+\- Pulsador B1 identificado como activo en bajo.
+
+\- Clasificación de pulsaciones cortas implementada y probada.
+
+\- Clasificación de pulsaciones largas de 1500 ms implementada y probada.
+
+\- Protección contra repetición de pulsaciones largas implementada.
+
+\- Contadores independientes de pulsaciones cortas y largas funcionando.
 
