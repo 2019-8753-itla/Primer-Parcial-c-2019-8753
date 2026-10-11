@@ -129,6 +129,11 @@ static uint8_t manualDuty = 25U;
 /* Control de transmision periodica UART */
 static uint8_t streamEnabled = 0U;
 static uint32_t streamLastUpdate = 0U;
+
+/* Control del LED indicador de estados */
+static uint32_t statusLedLastUpdate = 0U;
+static SystemMode statusLedLastMode = MODE_MANUAL;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -585,7 +590,7 @@ uint8_t UART_SendText(const char *text)
                    return 1U;
                }
 
-               void UART_ServiceTx(void)
+              void UART_ServiceTx(void)
                {
                    if (uartTxBusy != 0U)
                    {
@@ -863,6 +868,48 @@ int main(void)
 	          UART_SendText(streamMessage);
 	      }
 	  }
+	  /* Indicador LED de estados */
+	  if (currentMode != statusLedLastMode)
+	  {
+	      /* Reiniciar temporizacion al cambiar de modo */
+	      statusLedLastMode = currentMode;
+	      statusLedLastUpdate = now;
+
+	      /* Establecer estado inicial del LED */
+	      HAL_GPIO_WritePin(STATUS_LED_GPIO_Port,
+	                        STATUS_LED_Pin,
+	                        GPIO_PIN_SET);
+	  }
+
+	  if (currentMode == MODE_MANUAL)
+	  {
+	      /* MANUAL: LED encendido permanentemente */
+	      HAL_GPIO_WritePin(STATUS_LED_GPIO_Port,
+	                        STATUS_LED_Pin,
+	                        GPIO_PIN_SET);
+	  }
+	  else if (currentMode == MODE_AUTO)
+	  {
+	      /* AUTO: cambiar estado cada 500 ms */
+	      if ((uint32_t)(now - statusLedLastUpdate) >= 500U)
+	      {
+	          statusLedLastUpdate = now;
+
+	          HAL_GPIO_TogglePin(STATUS_LED_GPIO_Port,
+	                             STATUS_LED_Pin);
+	      }
+	  }
+	  else if (currentMode == MODE_PAUSE)
+	  {
+	      /* PAUSA: cambiar estado cada 125 ms */
+	      if ((uint32_t)(now - statusLedLastUpdate) >= 125U)
+	      {
+	          statusLedLastUpdate = now;
+
+	          HAL_GPIO_TogglePin(STATUS_LED_GPIO_Port,
+	                             STATUS_LED_Pin);
+	      }
+	  }
   }
 
 
@@ -1043,7 +1090,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : USER_BTN_Pin */
   GPIO_InitStruct.Pin = USER_BTN_Pin;
@@ -1051,12 +1098,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USER_BTN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
+  /*Configure GPIO pin : STATUS_LED_Pin */
+  GPIO_InitStruct.Pin = STATUS_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(STATUS_LED_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);

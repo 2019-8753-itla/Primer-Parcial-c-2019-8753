@@ -624,3 +624,28 @@ Pendiente:
 - Verificar STREAM en todos los estados.
 - Implementar indicadores LED de estados.
 - Completar validaciones y pruebas finales.
+
+
+## Indicador LED de estados
+
+Se implementó un indicador visual mediante una salida GPIO
+configurada en PB13.
+
+El LED permite identificar el modo de funcionamiento:
+
+- MANUAL: permanece encendido continuamente.
+- AUTO: cambia de estado cada 500 ms.
+- PAUSA: cambia de estado cada 125 ms.
+
+El control del indicador utiliza el contador de milisegundos
+del sistema, sin retardos bloqueantes.
+
+### Pruebas realizadas
+
+- Se verificó el encendido y apagado físico del LED.
+- Se comprobó el encendido permanente en modo MANUAL.
+- Se verificó el parpadeo lento en modo AUTO.
+- Se verificó el parpadeo rápido en modo PAUSA.
+- Se comprobó el funcionamiento mediante comandos UART.
+
+Resultado: pruebas satisfactorias.
