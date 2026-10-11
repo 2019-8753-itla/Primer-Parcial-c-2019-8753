@@ -124,6 +124,38 @@ void UART_ServiceTx(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+uint8_t UART_ParseDuty(const char *text, uint8_t *duty)
+{
+    uint32_t value = 0U;
+
+    if ((text == NULL) || (duty == NULL) || (*text == '\0'))
+    {
+        return 0U;
+    }
+
+    while (*text != '\0')
+    {
+        if ((*text < '0') || (*text > '9'))
+        {
+            return 0U;
+        }
+
+        value = (value * 10U) + (uint32_t)(*text - '0');
+
+        if (value > 100U)
+        {
+            return 0U;
+        }
+
+        text++;
+    }
+
+    *duty = (uint8_t)value;
+
+    return 1U;
+}
+
 void PWM_SetDuty(uint8_t duty)
 {
     if (duty > 100U)
@@ -211,6 +243,21 @@ void UART_ProcessCommand(const char *command)
         UART_SendText(response);
     }
 
+    else if (strncmp(command, "DUTY ", 5) == 0)
+    {
+        uint8_t newDuty;
+
+        if (UART_ParseDuty(command + 5, &newDuty))
+        {
+            PWM_SetDuty(newDuty);
+
+            UART_SendText("OK DUTY\r\n");
+        }
+        else
+        {
+            UART_SendText("ERR DUTY\r\n");
+        }
+    }
     else
     {
         UART_SendText("ERR COMMAND\r\n");

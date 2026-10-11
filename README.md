@@ -391,3 +391,39 @@ Resultado: PRUEBA EXITOSA.
 
 Nota: MODE MANUAL es actualmente una respuesta fija.
 La maquina de estados sera implementada luego.
+
+## Control del PWM mediante el comando DUTY
+
+Se implemento el comando DUTY n para modificar el ciclo
+de trabajo del PWM de TIM2, canal 1, desde la terminal UART.
+
+Configuracion:
+- Microcontrolador: STM32F302R8.
+- Salida PWM: TIM2_CH1, PA0.
+- Frecuencia PWM: 1000 Hz.
+- Comunicacion: USART2, 115200 baudios, 8N1.
+- Terminal utilizada: PuTTY, COM5.
+- Rango de duty cycle: 0 a 100%.
+
+Implementacion:
+- Se agrego UART_ParseDuty para validar valores numericos.
+- Se incorporo DUTY n al interprete de comandos UART.
+- Se utiliza PWM_SetDuty para actualizar el registro CCR1.
+- La variable pwmDuty almacena el ultimo porcentaje.
+- El comando STATUS permite consultar el duty configurado.
+
+Pruebas realizadas:
+- DUTY 25: cambio de brillo correcto.
+- DUTY 50: cambio de brillo correcto.
+- DUTY 75: cambio de brillo correcto.
+- DUTY 0: LED apagado.
+- DUTY 100: LED encendido al maximo.
+- DUTY 150: valor rechazado.
+- STATUS: muestra el ultimo duty configurado.
+
+Resultado: PRUEBA FUNCIONAL EXITOSA.
+
+Pendiente:
+- Implementar el comando FREQ n.
+- Implementar los modos MANUAL, AUTO y PAUSA.
+- Completar las pruebas de integracion.
