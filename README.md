@@ -316,3 +316,40 @@ Pendiente:
 - Medicion instrumental de frecuencia y duty.
 - Verificacion de los extremos 0 % y 100 %.
 - Integracion con comandos UART y maquina de estados.
+
+## Prueba de comunicacion UART - USART2
+
+**Hardware:** STM32 NUCLEO-F302R8
+
+**Configuracion:**
+- Puerto serial: COM5
+- Velocidad: 115200 baudios
+- Formato: 8N1
+- Comunicacion mediante ST-LINK Virtual COM Port
+- Recepcion UART por interrupciones
+- Buffer circular de recepcion de 128 bytes
+- Transmision UART por interrupciones
+
+**Procedimiento:**
+1. Compilar el proyecto en STM32CubeIDE.
+2. Programar la STM32 mediante ST-LINK.
+3. Abrir PuTTY utilizando COM5 y 115200 baudios.
+4. Enviar el comando HELP y presionar Enter.
+5. Verificar la respuesta del microcontrolador.
+
+**Resultado:**
+- Compilacion realizada correctamente.
+- Programa cargado en la STM32.
+- LED externo funcionando.
+- Comando HELP recibido y procesado correctamente.
+- La STM32 respondio mostrando la lista de comandos.
+- Se verifico la comunicacion UART bidireccional.
+
+**Observacion:**
+PuTTY inicialmente no mostraba los caracteres escritos
+porque el eco local estaba desactivado. Esto no afecto
+el funcionamiento de la comunicacion UART.
+
+**Pendiente:**
+Implementar y validar los comandos restantes,
+la maquina de estados y las pruebas completas.

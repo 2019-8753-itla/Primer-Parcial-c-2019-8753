@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,6 +65,45 @@ uint8_t longPressReported = 0;
 uint32_t shortPressCount = 0;
 uint32_t longPressCount = 0;
 
+/* Recepcion UART por interrupciones */
+#define UART_RX_BUFFER_SIZE 128U
+
+static uint8_t uartRxByte;
+
+static volatile uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
+
+static volatile uint16_t uartRxHead = 0U;
+static volatile uint16_t uartRxTail = 0U;
+
+static volatile uint32_t uartRxOverflowCount = 0U;
+
+/* Procesamiento de comandos UART */
+#define UART_LINE_MAX_LENGTH 63U
+
+static char uartLine[UART_LINE_MAX_LENGTH + 1U];
+
+static uint8_t uartLineLength = 0U;
+
+static uint8_t uartLineDiscard = 0U;
+
+static uint8_t uartLastWasCR = 0U;
+
+static volatile uint32_t uartLineOverflowCount = 0U;
+
+/* Transmision UART no bloqueante */
+#define UART_TX_BUFFER_SIZE 256U
+
+static uint8_t uartTxBuffer[UART_TX_BUFFER_SIZE];
+
+static volatile uint16_t uartTxHead = 0U;
+static volatile uint16_t uartTxTail = 0U;
+
+static volatile uint8_t uartTxBusy = 0U;
+
+static volatile uint32_t uartTxOverflowCount = 0U;
+
+static uint8_t uartTxActiveByte;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,6 +113,9 @@ static void MX_USART2_UART_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
+
+uint8_t UART_SendText(const char *text);
+void UART_ServiceTx(void);
 
 /* USER CODE END PFP */
 
@@ -92,6 +134,184 @@ void PWM_SetDuty(uint8_t duty)
 
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pulse);
 }
+
+uint8_t UART_ReadByte(uint8_t *data)
+{
+    if (data == NULL)
+    {
+        return 0U;
+    }
+
+    /* Comprobar si hay caracteres disponibles */
+    if (uartRxHead == uartRxTail)
+    {
+        return 0U;
+    }
+
+    /* Recuperar el siguiente caracter */
+    *data = uartRxBuffer[uartRxTail];
+
+    /* Avanzar la posicion de lectura */
+    uartRxTail =
+        (uartRxTail + 1U) % UART_RX_BUFFER_SIZE;
+
+    return 1U;
+}
+
+void UART_ProcessCommand(const char *command)
+{
+    if (strcmp(command, "HELP") == 0)
+    {
+        UART_SendText(
+            "OK\r\n"
+            "HELP\r\n"
+            "STATUS\r\n"
+            "MODE MANUAL\r\n"
+            "MODE AUTO\r\n"
+            "DUTY n\r\n"
+            "FREQ n\r\n"
+            "PAUSE\r\n"
+            "RESUME\r\n"
+            "STREAM ON\r\n"
+            "STREAM OFF\r\n"
+        );
+    }
+    else
+    {
+        UART_SendText("ERR COMMAND\r\n");
+    }
+}
+
+void UART_ProcessRx(void)
+{
+    uint8_t receivedByte;
+    uint16_t processed = 0U;
+
+    /* Limitar trabajo por iteracion del programa principal */
+    while ((processed < 32U) && UART_ReadByte(&receivedByte))
+    {
+        processed++;
+
+        /* Evitar procesar CRLF dos veces */
+        if ((receivedByte == '\n') && uartLastWasCR)
+        {
+            uartLastWasCR = 0U;
+            continue;
+        }
+
+        uartLastWasCR = (receivedByte == '\r') ? 1U : 0U;
+
+        /* Detectar final de linea */
+        if ((receivedByte == '\r') || (receivedByte == '\n'))
+        {
+            if (uartLineDiscard)
+            {
+                uartLineOverflowCount++;
+            }
+            else if (uartLineLength > 0U)
+            {
+                uartLine[uartLineLength] = '\0';
+
+
+
+                UART_ProcessCommand(uartLine);
+            }
+
+            /* Preparar la siguiente linea */
+            uartLineLength = 0U;
+            uartLineDiscard = 0U;
+        }
+        else if (!uartLineDiscard)
+        {
+            if (uartLineLength < UART_LINE_MAX_LENGTH)
+            {
+                uartLine[uartLineLength++] = (char)receivedByte;
+            }
+            else
+            {
+                /* Descartar hasta el siguiente fin de linea */
+                uartLineDiscard = 1U;
+            }
+        }
+    }
+}
+
+uint8_t UART_SendText(const char *text)
+
+               {
+                   uint16_t length = 0U;
+                   uint16_t freeSpace;
+
+                   if (text == NULL)
+                   {
+                       return 0U;
+                   }
+
+                   /* Calcular longitud del mensaje */
+                   while (text[length] != '\0')
+                   {
+                       length++;
+
+                       if (length >= UART_TX_BUFFER_SIZE)
+                       {
+                           uartTxOverflowCount++;
+                           return 0U;
+                       }
+                   }
+
+                   /* Calcular espacio disponible */
+                   uint32_t primask = __get_PRIMASK();
+
+                   __disable_irq();
+
+                   uint16_t used =
+                       (uartTxHead + UART_TX_BUFFER_SIZE - uartTxTail)
+                       % UART_TX_BUFFER_SIZE;
+
+                   freeSpace = (UART_TX_BUFFER_SIZE - 1U) - used;
+
+                   __set_PRIMASK(primask);
+
+                   if (length > freeSpace)
+                   {
+                       uartTxOverflowCount++;
+                       return 0U;
+                   }
+
+                   /* Agregar mensaje al buffer */
+                   for (uint16_t i = 0U; i < length; i++)
+                   {
+                       uartTxBuffer[uartTxHead] = (uint8_t)text[i];
+
+                       uartTxHead =
+                           (uartTxHead + 1U) % UART_TX_BUFFER_SIZE;
+                   }
+
+                   return 1U;
+               }
+
+               void UART_ServiceTx(void)
+               {
+                   if (uartTxBusy != 0U)
+                   {
+                       return;
+                   }
+
+                   if (uartTxHead == uartTxTail)
+                   {
+                       return;
+                   }
+
+                   uartTxActiveByte = uartTxBuffer[uartTxTail];
+                   uartTxBusy = 1U;
+
+                   if (HAL_UART_Transmit_IT(&huart2,
+                                            &uartTxActiveByte,
+                                            1U) != HAL_OK)
+                   {
+                       uartTxBusy = 0U;
+                   }
+               }
 /* USER CODE END 0 */
 
 /**
@@ -132,6 +352,11 @@ int main(void)
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   PWM_SetDuty(25);
 
+  if (HAL_UART_Receive_IT(&huart2, &uartRxByte, 1U) != HAL_OK)
+  {
+      Error_Handler();
+  }
+
   buttonRawState =
       HAL_GPIO_ReadPin(USER_BTN_GPIO_Port, USER_BTN_Pin);
 
@@ -146,6 +371,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  UART_ProcessRx();
+	  UART_ServiceTx();
 
 	  uint32_t now = g_ms;
 
@@ -224,6 +452,8 @@ int main(void)
 	      }
 	  }
   }
+
+
   /* USER CODE END 3 */
 }
 
@@ -437,6 +667,38 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     if (GPIO_Pin == USER_BTN_Pin)
     {
         buttonEdgePending = 1;
+    }
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART2)
+    {
+        uint16_t nextHead =
+            (uartRxHead + 1U) % UART_RX_BUFFER_SIZE;
+
+        if (nextHead != uartRxTail)
+        {
+            uartRxBuffer[uartRxHead] = uartRxByte;
+            uartRxHead = nextHead;
+        }
+        else
+        {
+            uartRxOverflowCount++;
+        }
+
+        HAL_UART_Receive_IT(&huart2, &uartRxByte, 1U);
+    }
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART2)
+    {
+        uartTxTail =
+            (uartTxTail + 1U) % UART_TX_BUFFER_SIZE;
+
+        uartTxBusy = 0U;
     }
 }
 
