@@ -210,13 +210,13 @@ Actualmente se configuro inicialmente:
 \- Contadores independientes de pulsaciones cortas y largas funcionando.
 
 
-## Configuracion y prueba del PWM
+Configuracion y prueba del PWM
 
-### Objetivo
+Objetivo
 Configurar y comprobar el funcionamiento del PWM mediante
 el temporizador TIM2 del STM32F302R8.
 
-### Configuracion realizada
+Configuracion realizada
 - Temporizador: TIM2.
 - Canal: CH1.
 - Pin de salida: PA0.
@@ -227,7 +227,7 @@ el temporizador TIM2 del STM32F302R8.
 - Frecuencia calculada: 1000 Hz.
 - Duty Cycle inicial: 25%.
 
-### Desarrollo
+Desarrollo
 Se verifico la configuracion de TIM2 en STM32CubeIDE.
 Inicialmente, el LED externo no encendia porque el valor
 Pulse generado en main.c era 0.
@@ -238,18 +238,18 @@ y se regenero el codigo.
 Posteriormente, se compilo el proyecto y se cargo
 correctamente en la placa STM32.
 
-### Resultados
+Resultados
 - Compilacion exitosa.
 - Programacion de la STM32 exitosa.
 - LED externo conectado a PA0 encendido.
 - Funcionamiento observado compatible con PWM al 25%.
 - Frecuencia y duty cycle pendientes de medicion instrumental.
 
-### Estado
+Estado
 Primera prueba del PWM completada correctamente.
 
 
-### Prueba PWM al 50 %
+Prueba PWM al 50 %
 
 - Periferico utilizado: TIM2, canal 1.
 - Pin de salida: PA0.
@@ -272,7 +272,7 @@ Nota: esta configuracion corresponde a una prueba.
 El valor inicial definitivo del sistema sera 25 %,
 segun los requisitos del parcial.
 
-### Prueba PWM al 75 %
+Prueba PWM al 75 %
 
 Configuracion:
 - Periferico: TIM2.
@@ -294,7 +294,7 @@ Nota:
 Esta configuracion es temporal.
 El sistema definitivo debe iniciar con duty de 25 %.
 
-### Control dinamico del PWM
+Control dinamico del PWM
 
 Se implemento la funcion PWM_SetDuty() para modificar
 el ciclo de trabajo de TIM2 CH1 sin regenerar el codigo.
@@ -317,11 +317,11 @@ Pendiente:
 - Verificacion de los extremos 0 % y 100 %.
 - Integracion con comandos UART y maquina de estados.
 
-## Prueba de comunicacion UART - USART2
+Prueba de comunicacion UART - USART2
 
-**Hardware:** STM32 NUCLEO-F302R8
+Hardware: STM32 NUCLEO-F302R8
 
-**Configuracion:**
+Configuracion:
 - Puerto serial: COM5
 - Velocidad: 115200 baudios
 - Formato: 8N1
@@ -330,14 +330,14 @@ Pendiente:
 - Buffer circular de recepcion de 128 bytes
 - Transmision UART por interrupciones
 
-**Procedimiento:**
+Procedimiento:
 1. Compilar el proyecto en STM32CubeIDE.
 2. Programar la STM32 mediante ST-LINK.
 3. Abrir PuTTY utilizando COM5 y 115200 baudios.
 4. Enviar el comando HELP y presionar Enter.
 5. Verificar la respuesta del microcontrolador.
 
-**Resultado:**
+Resultado:
 - Compilacion realizada correctamente.
 - Programa cargado en la STM32.
 - LED externo funcionando.
@@ -345,16 +345,16 @@ Pendiente:
 - La STM32 respondio mostrando la lista de comandos.
 - Se verifico la comunicacion UART bidireccional.
 
-**Observacion:**
+Observacion:
 PuTTY inicialmente no mostraba los caracteres escritos
 porque el eco local estaba desactivado. Esto no afecto
 el funcionamiento de la comunicacion UART.
 
-**Pendiente:**
+Pendiente:
 Implementar y validar los comandos restantes,
 la maquina de estados y las pruebas completas.
 
-## Implementacion y prueba del comando STATUS
+Implementacion y prueba del comando STATUS
 
 Se implemento el comando STATUS mediante USART2 para
 consultar la configuracion actual del PWM generado por TIM2.
@@ -392,7 +392,7 @@ Resultado: PRUEBA EXITOSA.
 Nota: MODE MANUAL es actualmente una respuesta fija.
 La maquina de estados sera implementada luego.
 
-## Control del PWM mediante el comando DUTY
+Control del PWM mediante el comando DUTY
 
 Se implemento el comando DUTY n para modificar el ciclo
 de trabajo del PWM de TIM2, canal 1, desde la terminal UART.
@@ -428,7 +428,7 @@ Pendiente:
 - Implementar los modos MANUAL, AUTO y PAUSA.
 - Completar las pruebas de integracion.
 
-## Control de frecuencia PWM mediante UART
+Control de frecuencia PWM mediante UART
 
 Se implemento el comando FREQ n para modificar la
 frecuencia del PWM generado por TIM2, canal 1, PA0.
@@ -469,7 +469,7 @@ Pendiente:
 - Verificar transiciones de frecuencia.
 - Implementar los modos MANUAL, AUTO y PAUSA.
 
-## Maquina de estados MANUAL, AUTO y PAUSA
+Maquina de estados MANUAL, AUTO y PAUSA
 
 Se implemento una maquina de estados para controlar
 el funcionamiento del sistema mediante el boton B1.
@@ -516,7 +516,7 @@ Pendiente:
 - Completar comandos UART de control de estados.
 - Realizar pruebas finales con instrumentos.
 
-## Rampa automatica PWM
+Rampa automatica PWM
 
 Se implemento el comportamiento del modo AUTO mediante
 TIM2 para generar PWM y TIM6 como base de tiempo de 1 ms.
@@ -559,7 +559,7 @@ Pendiente:
 - Implementar indicadores LED de los modos.
 - Completar pruebas de robustez.
 
-## Control de estados mediante UART
+Control de estados mediante UART
 
 Se implementaron comandos para controlar la maquina
 de estados desde PuTTY mediante USART2 a 115200 baudios.
@@ -598,7 +598,7 @@ Pendiente:
 - Validar restricciones de DUTY durante AUTO y PAUSA.
 - Realizar pruebas finales y documentar evidencias.
 
-## Transmision periodica UART - STREAM
+Transmision periodica UART - STREAM
 
 Se implementaron los comandos STREAM ON y STREAM OFF.
 
@@ -626,7 +626,7 @@ Pendiente:
 - Completar validaciones y pruebas finales.
 
 
-## Indicador LED de estados
+Indicador LED de estados
 
 Se implementó un indicador visual mediante una salida GPIO
 configurada en PB13.
@@ -640,7 +640,7 @@ El LED permite identificar el modo de funcionamiento:
 El control del indicador utiliza el contador de milisegundos
 del sistema, sin retardos bloqueantes.
 
-### Pruebas realizadas
+Pruebas realizadas
 
 - Se verificó el encendido y apagado físico del LED.
 - Se comprobó el encendido permanente en modo MANUAL.
@@ -650,7 +650,7 @@ del sistema, sin retardos bloqueantes.
 
 Resultado: pruebas satisfactorias.
 
-## Protección de comandos según el modo
+Protección de comandos según el modo
 
 Se implementó una validación del comando DUTY para evitar
 modificaciones no autorizadas del PWM.
@@ -662,7 +662,7 @@ modificaciones no autorizadas del PWM.
 El sistema conserva el valor manual configurado y evita que
 un comando DUTY reactive el PWM durante la pausa.
 
-### Pruebas realizadas
+Pruebas realizadas
 
 - DUTY 75 en MANUAL: aceptado.
 - DUTY 50 en AUTO: rechazado; la rampa continúa.
@@ -672,12 +672,12 @@ un comando DUTY reactive el PWM durante la pausa.
 
 Resultado: pruebas satisfactorias.
 
-## Pruebas de robustez UART
+Pruebas de robustez UART
 
 Se realizaron pruebas para verificar el manejo de comandos
 incorrectos y la recuperación del sistema ante errores.
 
-### Validaciones realizadas
+Validaciones realizadas
 
 - DUTY 101: rechazado.
 - DUTY -100: rechazado.
@@ -688,7 +688,7 @@ incorrectos y la recuperación del sistema ante errores.
 - DUTY 50: aceptado correctamente.
 - STATUS: funcionamiento correcto después de los errores.
 
-### Prueba de longitud de línea
+Prueba de longitud de línea
 
 Se transmitió una cadena superior al límite de 63 caracteres.
 
@@ -701,12 +701,12 @@ respuesta correcta.
 Resultado: todas las pruebas realizadas fueron satisfactorias.
 
 
-## Verificación de frecuencias PWM
+Verificación de frecuencias PWM
 
 Se realizaron pruebas funcionales del PWM generado por TIM2,
 canal 1, mediante comandos UART.
 
-### Resultados
+Resultados
 
 | Comando | Frecuencia reportada | Duty |
 |---------|----------------------|------|
@@ -717,7 +717,7 @@ canal 1, mediante comandos UART.
 Se comprobó que el sistema permite cambiar entre las tres
 frecuencias admitidas sin modificar el duty configurado.
 
-### Limitación de medición
+Limitación de medición
 
 La verificación se realizó mediante los valores calculados
 a partir de los registros del temporizador TIM2 y mostrados
