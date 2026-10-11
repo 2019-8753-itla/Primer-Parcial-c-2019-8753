@@ -515,3 +515,46 @@ Pendiente:
 - Implementar los indicadores LED de cada estado.
 - Completar comandos UART de control de estados.
 - Realizar pruebas finales con instrumentos.
+
+## Rampa automatica PWM
+
+Se implemento el comportamiento del modo AUTO mediante
+TIM2 para generar PWM y TIM6 como base de tiempo de 1 ms.
+
+Caracteristicas:
+- Duty minimo: 10%.
+- Duty maximo: 90%.
+- Incremento o decremento: 1%.
+- Intervalo de actualizacion: 20 ms.
+- Tiempo nominal de subida: 1.6 segundos.
+- Tiempo nominal de bajada: 1.6 segundos.
+- Duracion nominal del ciclo completo: 3.2 segundos.
+- Funcionamiento no bloqueante.
+
+Funcionamiento:
+- Una pulsacion corta cambia de MANUAL a AUTO.
+- La rampa inicia en 10% y aumenta hasta 90%.
+- Posteriormente disminuye hasta 10%.
+- El ciclo se repite continuamente.
+- Al regresar a MANUAL se recupera el duty anterior.
+- Una pulsacion larga activa PAUSA y coloca PWM en 0%.
+- Al salir de PAUSA se recupera la rampa automatica.
+
+Variables utilizadas:
+- autoDuty: valor actual de la rampa.
+- autoDirection: sentido de incremento o decremento.
+- autoLastUpdate: referencia temporal.
+- manualDuty: duty conservado del modo MANUAL.
+
+Pruebas funcionales:
+- Variacion continua de intensidad en AUTO: correcta.
+- Entrada a PAUSA durante AUTO: correcta.
+- Recuperacion de AUTO despues de PAUSA: correcta.
+- Recuperacion de 75% al regresar a MANUAL: correcta.
+- Consulta del estado mediante STATUS: correcta.
+
+Pendiente:
+- Verificacion instrumental del periodo de la rampa.
+- Completar comandos UART de control de estados.
+- Implementar indicadores LED de los modos.
+- Completar pruebas de robustez.

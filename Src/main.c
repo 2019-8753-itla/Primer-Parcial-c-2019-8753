@@ -119,6 +119,13 @@ static SystemMode previousMode = MODE_MANUAL;
 
 static uint8_t savedDuty = 25U;
 
+/* Control de rampa automatica */
+static uint8_t autoDuty = 10U;
+static int8_t autoDirection = 1;
+static uint32_t autoLastUpdate = 0U;
+
+static uint8_t manualDuty = 25U;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -630,11 +637,22 @@ int main(void)
 	                              /* Alternar entre MANUAL y AUTO */
 	                              if (currentMode == MODE_MANUAL)
 	                              {
+	                                  /* Guardar la configuracion manual */
+	                                  manualDuty = pwmDuty;
+
+	                                  /* Iniciar la rampa desde 10% */
+	                                  autoDuty = 10U;
+	                                  autoDirection = 1;
+	                                  autoLastUpdate = now;
+
 	                                  currentMode = MODE_AUTO;
+	                                  PWM_SetDuty(autoDuty);
 	                              }
 	                              else if (currentMode == MODE_AUTO)
 	                              {
+	                                  /* Recuperar el duty manual */
 	                                  currentMode = MODE_MANUAL;
+	                                  PWM_SetDuty(manualDuty);
 	                              }
 	                          }
 	                      }
@@ -671,6 +689,47 @@ int main(void)
 	              PWM_SetDuty(savedDuty);
 	          }
 	      }
+	  }
+
+	  /* Rampa automatica PWM */
+	  if (currentMode == MODE_AUTO)
+	  {
+	      if ((uint32_t)(now - autoLastUpdate) >= 20U)
+	      {
+	          autoLastUpdate = now;
+
+	          if (autoDirection > 0)
+	          {
+	              if (autoDuty < 90U)
+	              {
+	                  autoDuty++;
+	              }
+	              else
+	              {
+	                  autoDirection = -1;
+	                  autoDuty--;
+	              }
+	          }
+	          else
+	          {
+	              if (autoDuty > 10U)
+	              {
+	                  autoDuty--;
+	              }
+	              else
+	              {
+	                  autoDirection = 1;
+	                  autoDuty++;
+	              }
+	          }
+
+	          PWM_SetDuty(autoDuty);
+	      }
+	  }
+	  else
+	  {
+	      /* Evita acumular tiempo fuera de AUTO */
+	      autoLastUpdate = now;
 	  }
   }
 
