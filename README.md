@@ -558,3 +558,42 @@ Pendiente:
 - Completar comandos UART de control de estados.
 - Implementar indicadores LED de los modos.
 - Completar pruebas de robustez.
+
+## Control de estados mediante UART
+
+Se implementaron comandos para controlar la maquina
+de estados desde PuTTY mediante USART2 a 115200 baudios.
+
+Comandos implementados:
+- MODE MANUAL: selecciona el funcionamiento manual.
+- MODE AUTO: inicia la rampa automatica.
+- PAUSE: suspende el funcionamiento y apaga el PWM.
+- RESUME: recupera el estado anterior.
+
+Comportamiento:
+- MODE AUTO inicia la rampa desde 10%.
+- MODE MANUAL recupera el duty manual anterior.
+- PAUSE guarda el estado y duty actuales.
+- Durante PAUSA, la salida PWM permanece en 0%.
+- RESUME recupera el estado y duty anteriores.
+- La rampa AUTO continua despues de RESUME.
+- Los comandos MODE son rechazados durante PAUSA.
+
+Validaciones:
+- PAUSE repetido responde ERR ALREADY PAUSED.
+- RESUME fuera de PAUSA responde ERR NOT PAUSED.
+- MODE durante PAUSA responde ERR PAUSED.
+
+Pruebas funcionales:
+- Cambio MANUAL/AUTO por UART: correcto.
+- Recuperacion del duty manual: correcta.
+- PAUSE y RESUME en MANUAL: correctos.
+- PAUSE y RESUME en AUTO: correctos.
+- Validacion de comandos incorrectos: correcta.
+- Compatibilidad con el boton B1: correcta.
+
+Pendiente:
+- Implementar STREAM ON/OFF.
+- Implementar indicadores LED de los estados.
+- Validar restricciones de DUTY durante AUTO y PAUSA.
+- Realizar pruebas finales y documentar evidencias.

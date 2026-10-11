@@ -376,6 +376,86 @@ void UART_ProcessCommand(const char *command)
             UART_SendText("ERR FREQ\r\n");
         }
     }
+
+    else if (strcmp(command, "MODE MANUAL") == 0)
+    {
+        if (currentMode == MODE_PAUSE)
+        {
+            UART_SendText("ERR PAUSED\r\n");
+        }
+        else
+        {
+            if (currentMode == MODE_AUTO)
+            {
+                currentMode = MODE_MANUAL;
+                PWM_SetDuty(manualDuty);
+            }
+
+            UART_SendText("OK MODE MANUAL\r\n");
+        }
+    }
+    else if (strcmp(command, "MODE AUTO") == 0)
+    {
+        if (currentMode == MODE_PAUSE)
+        {
+            UART_SendText("ERR PAUSED\r\n");
+        }
+        else
+        {
+            if (currentMode == MODE_MANUAL)
+            {
+                manualDuty = pwmDuty;
+
+                autoDuty = 10U;
+                autoDirection = 1;
+                autoLastUpdate = g_ms;
+
+                currentMode = MODE_AUTO;
+                PWM_SetDuty(autoDuty);
+            }
+
+            UART_SendText("OK MODE AUTO\r\n");
+        }
+    }
+
+    else if (strcmp(command, "PAUSE") == 0)
+    {
+        if (currentMode == MODE_PAUSE)
+        {
+            UART_SendText("ERR ALREADY PAUSED\r\n");
+        }
+        else
+        {
+            /* Guardar el estado y duty actuales */
+            previousMode = currentMode;
+            savedDuty = pwmDuty;
+
+            /* Entrar en PAUSA */
+            currentMode = MODE_PAUSE;
+            PWM_SetDuty(0U);
+
+            UART_SendText("OK PAUSE\r\n");
+        }
+    }
+    else if (strcmp(command, "RESUME") == 0)
+    {
+        if (currentMode != MODE_PAUSE)
+        {
+            UART_SendText("ERR NOT PAUSED\r\n");
+        }
+        else
+        {
+            /* Recuperar estado y duty anteriores */
+            currentMode = previousMode;
+            PWM_SetDuty(savedDuty);
+
+            /* Evitar acumular tiempo durante PAUSA */
+            autoLastUpdate = g_ms;
+
+            UART_SendText("OK RESUME\r\n");
+        }
+    }
+
     else
     {
         UART_SendText("ERR COMMAND\r\n");
