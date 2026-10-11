@@ -671,3 +671,31 @@ un comando DUTY reactive el PWM durante la pausa.
 - RESUME: recupera el modo de funcionamiento anterior.
 
 Resultado: pruebas satisfactorias.
+
+## Pruebas de robustez UART
+
+Se realizaron pruebas para verificar el manejo de comandos
+incorrectos y la recuperación del sistema ante errores.
+
+### Validaciones realizadas
+
+- DUTY 101: rechazado.
+- DUTY -100: rechazado.
+- DUTY ABC: rechazado.
+- FREQ 750: rechazado.
+- FREQ 3000: rechazado.
+- KLK: comando desconocido, rechazado.
+- DUTY 50: aceptado correctamente.
+- STATUS: funcionamiento correcto después de los errores.
+
+### Prueba de longitud de línea
+
+Se transmitió una cadena superior al límite de 63 caracteres.
+
+El receptor descartó la línea sin ejecutar comandos
+incorrectos y continuó procesando nuevas instrucciones.
+
+Posteriormente se ejecutó STATUS y se obtuvo una
+respuesta correcta.
+
+Resultado: todas las pruebas realizadas fueron satisfactorias.
