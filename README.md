@@ -248,3 +248,26 @@ correctamente en la placa STM32.
 ### Estado
 Primera prueba del PWM completada correctamente.
 
+
+### Prueba PWM al 50 %
+
+- Periferico utilizado: TIM2, canal 1.
+- Pin de salida: PA0.
+- Modo: PWM Mode 1.
+- Polaridad: High.
+- Prescaler: 63.
+- Periodo: 999.
+- Pulse: 500.
+- Frecuencia calculada: 1000 Hz.
+- Duty cycle configurado: 50 %.
+
+Resultados:
+- Compilacion completada sin errores.
+- Programa cargado correctamente en la STM32.
+- LED externo encendido mediante PWM.
+- Prueba funcional realizada correctamente.
+- Pendiente: medicion instrumental de frecuencia y duty cycle.
+
+Nota: esta configuracion corresponde a una prueba.
+El valor inicial definitivo del sistema sera 25 %,
+segun los requisitos del parcial.
