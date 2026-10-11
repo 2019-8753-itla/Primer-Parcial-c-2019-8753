@@ -597,3 +597,30 @@ Pendiente:
 - Implementar indicadores LED de los estados.
 - Validar restricciones de DUTY durante AUTO y PAUSA.
 - Realizar pruebas finales y documentar evidencias.
+
+## Transmision periodica UART - STREAM
+
+Se implementaron los comandos STREAM ON y STREAM OFF.
+
+Funcionamiento:
+- STREAM ON activa la transmision periodica.
+- STREAM OFF detiene la transmision.
+- Intervalo nominal: 1000 ms.
+- Se transmite el modo, frecuencia y duty PWM.
+- El envio utiliza la cola UART no bloqueante.
+- La temporizacion utiliza TIM6 mediante g_ms.
+
+Pruebas:
+- Recepcion de mensajes periodicos: correcta.
+- STREAM OFF durante la transmision: correcto.
+- Recepcion de comandos mientras STREAM esta activo: correcta.
+
+Observacion:
+En PuTTY, los mensajes periodicos pueden mezclarse
+visualmente con los caracteres escritos por el usuario.
+Esto no impide que la STM32 procese el comando completo.
+
+Pendiente:
+- Verificar STREAM en todos los estados.
+- Implementar indicadores LED de estados.
+- Completar validaciones y pruebas finales.

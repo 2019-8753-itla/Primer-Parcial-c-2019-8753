@@ -126,6 +126,9 @@ static uint32_t autoLastUpdate = 0U;
 
 static uint8_t manualDuty = 25U;
 
+/* Control de transmision periodica UART */
+static uint8_t streamEnabled = 0U;
+static uint32_t streamLastUpdate = 0U;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -455,7 +458,19 @@ void UART_ProcessCommand(const char *command)
             UART_SendText("OK RESUME\r\n");
         }
     }
+    else if (strcmp(command, "STREAM ON") == 0)
+    {
+        streamEnabled = 1U;
+        streamLastUpdate = g_ms;
 
+        UART_SendText("OK STREAM ON\r\n");
+    }
+    else if (strcmp(command, "STREAM OFF") == 0)
+    {
+        streamEnabled = 0U;
+
+        UART_SendText("OK STREAM OFF\r\n");
+    }
     else
     {
         UART_SendText("ERR COMMAND\r\n");
@@ -810,6 +825,43 @@ int main(void)
 	  {
 	      /* Evita acumular tiempo fuera de AUTO */
 	      autoLastUpdate = now;
+	  }
+
+	  /* Transmision periodica de estado por UART */
+	  if (streamEnabled)
+	  {
+	      if ((uint32_t)(now - streamLastUpdate) >= 1000U)
+	      {
+	          streamLastUpdate = now;
+
+	          const char *modeText = "MANUAL";
+
+	          if (currentMode == MODE_AUTO)
+	          {
+	              modeText = "AUTO";
+	          }
+	          else if (currentMode == MODE_PAUSE)
+	          {
+	              modeText = "PAUSA";
+	          }
+
+	          uint32_t timerClock = 64000000U;
+	          uint32_t prescaler = htim2.Instance->PSC;
+	          uint32_t period = __HAL_TIM_GET_AUTORELOAD(&htim2);
+
+	          uint32_t frequency =
+	              timerClock / ((prescaler + 1U) * (period + 1U));
+
+	          char streamMessage[96];
+
+	          snprintf(streamMessage, sizeof(streamMessage),
+	                   "STREAM MODE:%s FREQ:%lu DUTY:%u%%\r\n",
+	                   modeText,
+	                   (unsigned long)frequency,
+	                   (unsigned int)pwmDuty);
+
+	          UART_SendText(streamMessage);
+	      }
 	  }
   }
 
