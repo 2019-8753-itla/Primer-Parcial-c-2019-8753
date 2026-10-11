@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <string.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -104,6 +105,8 @@ static volatile uint32_t uartTxOverflowCount = 0U;
 
 static uint8_t uartTxActiveByte;
 
+static uint8_t pwmDuty = 25U;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -123,15 +126,21 @@ void UART_ServiceTx(void);
 /* USER CODE BEGIN 0 */
 void PWM_SetDuty(uint8_t duty)
 {
-    if (duty > 100)
+    if (duty > 100U)
     {
-        duty = 100;
+        duty = 100U;
     }
 
+    /* Guardar el ultimo duty configurado */
+    pwmDuty = duty;
+
+    /* Obtener el periodo actual de TIM2 */
     uint32_t period = __HAL_TIM_GET_AUTORELOAD(&htim2);
 
+    /* Calcular el valor del registro CCR1 */
     uint32_t pulse = ((period + 1U) * duty) / 100U;
 
+    /* Actualizar el PWM */
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pulse);
 }
 
@@ -176,6 +185,32 @@ void UART_ProcessCommand(const char *command)
             "STREAM OFF\r\n"
         );
     }
+    else if (strcmp(command, "STATUS") == 0)
+    {
+        char response[96];
+
+        uint32_t timerClock = 64000000U;
+
+        uint32_t prescaler =
+            htim2.Instance->PSC;
+
+        uint32_t period =
+            __HAL_TIM_GET_AUTORELOAD(&htim2);
+
+        uint32_t frequency =
+            timerClock / ((prescaler + 1U) * (period + 1U));
+
+        snprintf(response, sizeof(response),
+                 "OK\r\n"
+                 "MODE: MANUAL\r\n"
+                 "PWM FREQ: %lu Hz\r\n"
+                 "PWM DUTY: %u%%\r\n",
+                 (unsigned long)frequency,
+                 (unsigned int)pwmDuty);
+
+        UART_SendText(response);
+    }
+
     else
     {
         UART_SendText("ERR COMMAND\r\n");

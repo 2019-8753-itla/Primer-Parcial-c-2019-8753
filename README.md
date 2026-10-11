@@ -353,3 +353,41 @@ el funcionamiento de la comunicacion UART.
 **Pendiente:**
 Implementar y validar los comandos restantes,
 la maquina de estados y las pruebas completas.
+
+## Implementacion y prueba del comando STATUS
+
+Se implemento el comando STATUS mediante USART2 para
+consultar la configuracion actual del PWM generado por TIM2.
+
+Configuracion:
+- Microcontrolador: STM32F302R8.
+- Comunicacion UART: 115200 baudios, 8N1.
+- Puerto utilizado: COM5.
+- Temporizador PWM: TIM2, canal 1, PA0.
+- Frecuencia configurada: 1000 Hz.
+- Duty cycle inicial: 25%.
+
+Cambios realizados:
+- Se agrego la variable pwmDuty para almacenar el duty cycle.
+- Se actualizo PWM_SetDuty para guardar el porcentaje configurado.
+- Se implemento STATUS utilizando snprintf.
+- Se obtiene el prescaler desde el registro PSC de TIM2.
+- Se obtiene el periodo desde el registro ARR de TIM2.
+- Se calcula la frecuencia del PWM a partir de estos valores.
+
+Prueba realizada:
+1. Compilar el proyecto sin errores.
+2. Programar la STM32 mediante ST-LINK.
+3. Abrir PuTTY en COM5 a 115200 baudios.
+4. Enviar STATUS y presionar Enter.
+
+Respuesta obtenida:
+OK
+MODE: MANUAL
+PWM FREQ: 1000 Hz
+PWM DUTY: 25%
+
+Resultado: PRUEBA EXITOSA.
+
+Nota: MODE MANUAL es actualmente una respuesta fija.
+La maquina de estados sera implementada luego.
