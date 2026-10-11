@@ -353,9 +353,18 @@ void UART_ProcessCommand(const char *command)
     {
         uint8_t newDuty;
 
-        if (UART_ParseDuty(command + 5, &newDuty))
+        if (currentMode == MODE_PAUSE)
+        {
+            UART_SendText("ERR PAUSED\r\n");
+        }
+        else if (currentMode == MODE_AUTO)
+        {
+            UART_SendText("ERR AUTO MODE\r\n");
+        }
+        else if (UART_ParseDuty(command + 5, &newDuty))
         {
             PWM_SetDuty(newDuty);
+            manualDuty = newDuty;
 
             UART_SendText("OK DUTY\r\n");
         }

@@ -649,3 +649,25 @@ del sistema, sin retardos bloqueantes.
 - Se comprobó el funcionamiento mediante comandos UART.
 
 Resultado: pruebas satisfactorias.
+
+## Protección de comandos según el modo
+
+Se implementó una validación del comando DUTY para evitar
+modificaciones no autorizadas del PWM.
+
+- MANUAL: permite configurar el duty entre 0 % y 100 %.
+- AUTO: rechaza DUTY con el mensaje ERR AUTO MODE.
+- PAUSA: rechaza DUTY con el mensaje ERR PAUSED.
+
+El sistema conserva el valor manual configurado y evita que
+un comando DUTY reactive el PWM durante la pausa.
+
+### Pruebas realizadas
+
+- DUTY 75 en MANUAL: aceptado.
+- DUTY 50 en AUTO: rechazado; la rampa continúa.
+- DUTY 80 en PAUSA: rechazado; PWM permanece en 0 %.
+- STATUS durante PAUSA: confirma MODE PAUSA y DUTY 0 %.
+- RESUME: recupera el modo de funcionamiento anterior.
+
+Resultado: pruebas satisfactorias.
