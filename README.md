@@ -699,3 +699,31 @@ Posteriormente se ejecutó STATUS y se obtuvo una
 respuesta correcta.
 
 Resultado: todas las pruebas realizadas fueron satisfactorias.
+
+
+## Verificación de frecuencias PWM
+
+Se realizaron pruebas funcionales del PWM generado por TIM2,
+canal 1, mediante comandos UART.
+
+### Resultados
+
+| Comando | Frecuencia reportada | Duty |
+|---------|----------------------|------|
+| FREQ 500 | 500 Hz | 50 % |
+| FREQ 1000 | 1000 Hz | 50 % |
+| FREQ 2000 | 2000 Hz | 50 % |
+
+Se comprobó que el sistema permite cambiar entre las tres
+frecuencias admitidas sin modificar el duty configurado.
+
+### Limitación de medición
+
+La verificación se realizó mediante los valores calculados
+a partir de los registros del temporizador TIM2 y mostrados
+por el comando STATUS.
+
+No se realizó una medición física de la frecuencia en PA0
+debido a que no se dispone de osciloscopio ni analizador lógico.
+
+Resultado: pruebas funcionales satisfactorias.
