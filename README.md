@@ -427,3 +427,44 @@ Pendiente:
 - Implementar el comando FREQ n.
 - Implementar los modos MANUAL, AUTO y PAUSA.
 - Completar las pruebas de integracion.
+
+## Control de frecuencia PWM mediante UART
+
+Se implemento el comando FREQ n para modificar la
+frecuencia del PWM generado por TIM2, canal 1, PA0.
+
+Configuracion:
+- Microcontrolador: STM32F302R8.
+- Temporizador: TIM2.
+- Canal PWM: CH1.
+- Reloj del temporizador: 64 MHz.
+- Prescaler: 63.
+- Frecuencias permitidas: 500, 1000 y 2000 Hz.
+- Comunicacion: USART2, 115200 baudios.
+- Terminal: PuTTY, COM5.
+
+Implementacion:
+- Se agrego la funcion PWM_SetFrequency.
+- Se implemento UART_ParseFrequency para validar valores.
+- Se incorporo el comando FREQ n al interprete UART.
+- Se actualiza ARR para modificar el periodo del PWM.
+- Se recalcula CCR1 para conservar el duty configurado.
+- STATUS permite consultar la frecuencia resultante.
+
+Pruebas funcionales:
+- FREQ 500: respuesta OK FREQ.
+- STATUS: frecuencia reportada de 500 Hz.
+- FREQ 1000: respuesta OK FREQ.
+- STATUS: frecuencia reportada de 1000 Hz.
+- FREQ 2000: respuesta OK FREQ.
+- STATUS: frecuencia reportada de 2000 Hz.
+- FREQ 1500: respuesta ERR FREQ.
+
+Resultado:
+Pruebas funcionales por UART completadas correctamente.
+
+Pendiente:
+- Medir la frecuencia real con osciloscopio
+  o analizador logico.
+- Verificar transiciones de frecuencia.
+- Implementar los modos MANUAL, AUTO y PAUSA.

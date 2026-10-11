@@ -176,6 +176,34 @@ void PWM_SetDuty(uint8_t duty)
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pulse);
 }
 
+uint8_t PWM_SetFrequency(uint32_t frequency)
+{
+    uint32_t timerClock = 64000000U;
+
+    /* Validar las frecuencias permitidas */
+    if ((frequency != 500U) &&
+        (frequency != 1000U) &&
+        (frequency != 2000U))
+    {
+        return 0U;
+    }
+
+    /* Leer el prescaler actual */
+    uint32_t prescaler = htim2.Instance->PSC;
+
+    /* Calcular el nuevo periodo */
+    uint32_t newPeriod =
+        (timerClock / ((prescaler + 1U) * frequency)) - 1U;
+
+    /* Actualizar el periodo del PWM */
+    __HAL_TIM_SET_AUTORELOAD(&htim2, newPeriod);
+
+    /* Conservar el duty cycle configurado */
+    PWM_SetDuty(pwmDuty);
+
+    return 1U;
+}
+
 uint8_t UART_ReadByte(uint8_t *data)
 {
     if (data == NULL)
@@ -195,6 +223,45 @@ uint8_t UART_ReadByte(uint8_t *data)
     /* Avanzar la posicion de lectura */
     uartRxTail =
         (uartRxTail + 1U) % UART_RX_BUFFER_SIZE;
+
+    return 1U;
+}
+
+uint8_t UART_ParseFrequency(const char *text, uint32_t *frequency)
+{
+    uint32_t value = 0U;
+
+    if ((text == NULL) || (frequency == NULL) || (*text == '\0'))
+    {
+        return 0U;
+    }
+
+    while (*text != '\0')
+    {
+        if ((*text < '0') || (*text > '9'))
+        {
+            return 0U;
+        }
+
+        value = (value * 10U) + (uint32_t)(*text - '0');
+
+        /* Evitar valores excesivos */
+        if (value > 2000U)
+        {
+            return 0U;
+        }
+
+        text++;
+    }
+
+    if ((value != 500U) &&
+        (value != 1000U) &&
+        (value != 2000U))
+    {
+        return 0U;
+    }
+
+    *frequency = value;
 
     return 1U;
 }
@@ -256,6 +323,26 @@ void UART_ProcessCommand(const char *command)
         else
         {
             UART_SendText("ERR DUTY\r\n");
+        }
+    }
+    else if (strncmp(command, "FREQ ", 5) == 0)
+    {
+        uint32_t newFrequency;
+
+        if (UART_ParseFrequency(command + 5, &newFrequency))
+        {
+            if (PWM_SetFrequency(newFrequency))
+            {
+                UART_SendText("OK FREQ\r\n");
+            }
+            else
+            {
+                UART_SendText("ERR FREQ\r\n");
+            }
+        }
+        else
+        {
+            UART_SendText("ERR FREQ\r\n");
         }
     }
     else
