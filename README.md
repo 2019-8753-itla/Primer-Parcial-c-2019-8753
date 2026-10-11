@@ -271,3 +271,25 @@ Resultados:
 Nota: esta configuracion corresponde a una prueba.
 El valor inicial definitivo del sistema sera 25 %,
 segun los requisitos del parcial.
+
+### Prueba PWM al 75 %
+
+Configuracion:
+- Periferico: TIM2.
+- Canal: CH1.
+- Pin: PA0.
+- PWM Mode: 1.
+- Polaridad: High.
+- Prescaler: 63.
+- Counter Period: 999.
+- Pulse: 750.
+- Frecuencia calculada: 1000 Hz.
+- Duty cycle configurado: 75 %.
+
+Resultados:
+- Prueba funcional del PWM al 75 %.
+- Pendiente: mediciones instrumentales de frecuencia y duty cycle.
+
+Nota:
+Esta configuracion es temporal.
+El sistema definitivo debe iniciar con duty de 25 %.
