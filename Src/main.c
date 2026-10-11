@@ -79,7 +79,19 @@ static void MX_TIM6_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void PWM_SetDuty(uint8_t duty)
+{
+    if (duty > 100)
+    {
+        duty = 100;
+    }
 
+    uint32_t period = __HAL_TIM_GET_AUTORELOAD(&htim2);
+
+    uint32_t pulse = ((period + 1U) * duty) / 100U;
+
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pulse);
+}
 /* USER CODE END 0 */
 
 /**
@@ -118,6 +130,7 @@ int main(void)
 
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  PWM_SetDuty(25);
 
   buttonRawState =
       HAL_GPIO_ReadPin(USER_BTN_GPIO_Port, USER_BTN_Pin);
@@ -285,7 +298,7 @@ static void MX_TIM2_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 750;
+  sConfigOC.Pulse = 250;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)

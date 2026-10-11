@@ -293,3 +293,26 @@ Resultados:
 Nota:
 Esta configuracion es temporal.
 El sistema definitivo debe iniciar con duty de 25 %.
+
+### Control dinamico del PWM
+
+Se implemento la funcion PWM_SetDuty() para modificar
+el ciclo de trabajo de TIM2 CH1 sin regenerar el codigo.
+
+Caracteristicas:
+- Salida PWM: PA0.
+- Frecuencia calculada: 1000 Hz.
+- Rango de duty: 0 a 100 %.
+- Actualizacion mediante __HAL_TIM_SET_COMPARE().
+- Configuracion inicial: 25 %.
+
+Pruebas realizadas:
+- Compilacion sin errores.
+- Prueba funcional de PWM_SetDuty(50).
+- LED externo encendido correctamente.
+- Restauracion del duty inicial al 25 %.
+
+Pendiente:
+- Medicion instrumental de frecuencia y duty.
+- Verificacion de los extremos 0 % y 100 %.
+- Integracion con comandos UART y maquina de estados.
