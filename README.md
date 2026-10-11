@@ -73,8 +73,7 @@ Recursos asignados
 
 
 | Función        | Periférico | Pin/Recurso | Configuración 
-
-|                |            |             |                               
+                 
 
 | LED de estado  | GPIO       | PB13 / LD2  | Salida digital 
 
@@ -209,4 +208,43 @@ Actualmente se configuro inicialmente:
 \- Protección contra repetición de pulsaciones largas implementada.
 
 \- Contadores independientes de pulsaciones cortas y largas funcionando.
+
+
+## Configuracion y prueba del PWM
+
+### Objetivo
+Configurar y comprobar el funcionamiento del PWM mediante
+el temporizador TIM2 del STM32F302R8.
+
+### Configuracion realizada
+- Temporizador: TIM2.
+- Canal: CH1.
+- Pin de salida: PA0.
+- Reloj del temporizador: 64 MHz.
+- Prescaler: 63.
+- Counter Period: 999.
+- Pulse: 250.
+- Frecuencia calculada: 1000 Hz.
+- Duty Cycle inicial: 25%.
+
+### Desarrollo
+Se verifico la configuracion de TIM2 en STM32CubeIDE.
+Inicialmente, el LED externo no encendia porque el valor
+Pulse generado en main.c era 0.
+
+Se corrigio el valor Pulse a 250 desde el archivo .ioc
+y se regenero el codigo.
+
+Posteriormente, se compilo el proyecto y se cargo
+correctamente en la placa STM32.
+
+### Resultados
+- Compilacion exitosa.
+- Programacion de la STM32 exitosa.
+- LED externo conectado a PA0 encendido.
+- Funcionamiento observado compatible con PWM al 25%.
+- Frecuencia y duty cycle pendientes de medicion instrumental.
+
+### Estado
+Primera prueba del PWM completada correctamente.
 
