@@ -468,3 +468,50 @@ Pendiente:
   o analizador logico.
 - Verificar transiciones de frecuencia.
 - Implementar los modos MANUAL, AUTO y PAUSA.
+
+## Maquina de estados MANUAL, AUTO y PAUSA
+
+Se implemento una maquina de estados para controlar
+el funcionamiento del sistema mediante el boton B1.
+
+Estados implementados:
+- MANUAL: estado inicial del sistema.
+- AUTO: estado seleccionado mediante pulsacion corta.
+- PAUSA: suspende temporalmente la salida PWM.
+
+Control mediante boton:
+- Pulsacion corta: entre 30 ms y menos de 1500 ms.
+- Pulsacion larga: 1500 ms o mas.
+- Antirrebote: 30 ms.
+- Deteccion mediante EXTI y temporizacion con TIM6.
+
+Transiciones:
+- MANUAL -> AUTO: pulsacion corta.
+- AUTO -> MANUAL: pulsacion corta.
+- MANUAL/AUTO -> PAUSA: pulsacion larga.
+- PAUSA -> estado anterior: pulsacion larga.
+- Pulsacion corta en PAUSA: no cambia el estado.
+
+Comportamiento de PAUSA:
+- Se conserva el estado anterior.
+- Se guarda el duty cycle antes de entrar en PAUSA.
+- La salida PWM pasa a 0%.
+- Al reanudar, se recupera el duty anterior.
+
+Comando STATUS:
+- Muestra el estado real del sistema.
+- Informa la frecuencia PWM configurada.
+- Informa el duty cycle actual.
+
+Pruebas realizadas:
+- Cambio MANUAL/AUTO mediante B1: correcto.
+- Entrada y salida de PAUSA: correcto.
+- PWM al 0% durante PAUSA: correcto.
+- Recuperacion del duty anterior: correcto.
+- Visualizacion de los tres estados en STATUS: correcto.
+
+Pendiente:
+- Implementar la rampa automatica en AUTO.
+- Implementar los indicadores LED de cada estado.
+- Completar comandos UART de control de estados.
+- Realizar pruebas finales con instrumentos.

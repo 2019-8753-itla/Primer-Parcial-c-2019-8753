@@ -107,6 +107,18 @@ static uint8_t uartTxActiveByte;
 
 static uint8_t pwmDuty = 25U;
 
+typedef enum
+{
+    MODE_MANUAL = 0,
+    MODE_AUTO,
+    MODE_PAUSE
+} SystemMode;
+
+static SystemMode currentMode = MODE_MANUAL;
+static SystemMode previousMode = MODE_MANUAL;
+
+static uint8_t savedDuty = 25U;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -299,11 +311,23 @@ void UART_ProcessCommand(const char *command)
         uint32_t frequency =
             timerClock / ((prescaler + 1U) * (period + 1U));
 
+        const char *modeText = "MANUAL";
+
+        if (currentMode == MODE_AUTO)
+        {
+            modeText = "AUTO";
+        }
+        else if (currentMode == MODE_PAUSE)
+        {
+            modeText = "PAUSA";
+        }
+
         snprintf(response, sizeof(response),
                  "OK\r\n"
-                 "MODE: MANUAL\r\n"
+                 "MODE: %s\r\n"
                  "PWM FREQ: %lu Hz\r\n"
                  "PWM DUTY: %u%%\r\n",
+                 modeText,
                  (unsigned long)frequency,
                  (unsigned int)pwmDuty);
 
@@ -602,6 +626,16 @@ int main(void)
 	                              pressDuration < 1500U)
 	                          {
 	                              shortPressCount++;
+
+	                              /* Alternar entre MANUAL y AUTO */
+	                              if (currentMode == MODE_MANUAL)
+	                              {
+	                                  currentMode = MODE_AUTO;
+	                              }
+	                              else if (currentMode == MODE_AUTO)
+	                              {
+	                                  currentMode = MODE_MANUAL;
+	                              }
 	                          }
 	                      }
 
@@ -618,6 +652,24 @@ int main(void)
 	      {
 	          longPressReported = 1;
 	          longPressCount++;
+
+	          /* Entrar o salir del modo PAUSA */
+	          if (currentMode != MODE_PAUSE)
+	          {
+	              /* Guardar el modo y duty anteriores */
+	              previousMode = currentMode;
+	              savedDuty = pwmDuty;
+
+	              /* Activar PAUSA y apagar PWM */
+	              currentMode = MODE_PAUSE;
+	              PWM_SetDuty(0U);
+	          }
+	          else
+	          {
+	              /* Recuperar el modo y duty anteriores */
+	              currentMode = previousMode;
+	              PWM_SetDuty(savedDuty);
+	          }
 	      }
 	  }
   }
